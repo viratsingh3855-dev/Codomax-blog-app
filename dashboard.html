@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | BlogSpace</title>
+    <link rel="stylesheet" href="style.css"><style>
+    .dashboard {
+        max-width: 1100px;
+        margin: auto;
+        padding: 55px 6%;
+    }
+
+    .welcome {
+        background: #f0f2e9;
+        padding: 35px;
+        border-radius: 16px;
+        margin-bottom: 35px;
+    }
+
+    .welcome h1 {
+        font-size: clamp(28px, 4vw, 42px);
+        margin: 12px 0;
+    }
+
+    .welcome p {
+        color: #666;
+        line-height: 1.7;
+    }
+
+    .dashboard-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+    }
+
+    .dashboard-actions button {
+        cursor: pointer;
+        font: inherit;
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin: 35px 0 20px;
+    }
+
+    .blog-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 22px;
+    }
+
+    .blog-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        background: white;
+    }
+
+    .blog-card h3 {
+        margin: 12px 0;
+    }
+
+    .blog-card p {
+        color: var(--muted);
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .blog-category {
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--primary);
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .delete-btn {
+        margin-top: 16px;
+        border: 1px solid #ddd;
+        background: white;
+        padding: 9px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .empty-state {
+        padding: 35px;
+        text-align: center;
+        border: 1px dashed #ccc;
+        border-radius: 12px;
+        color: #666;
+        line-height: 1.8;
+    }
+
+    .secondary-btn {
+        border: 1px solid var(--border);
+        background: white;
+        padding: 12px 18px;
+        border-radius: 7px;
+    }
+
+    @media (max-width: 600px) {
+        .welcome { padding: 24px; }
+        .section-heading { align-items: flex-start; flex-direction: column; }
+    }
+</style>
+
+</head><body><header class="navbar">
+    <a href="index.html" class="logo">Blog<span>Space.</span></a>
+
+    <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="create-blog.html">Write a Blog</a>
+        <button id="logoutBtn" class="secondary-btn">Logout</button>
+    </nav>
+</header>
+
+<main class="dashboard">
+
+    <section class="welcome">
+        <span class="blog-category">YOUR PERSONAL SPACE</span>
+        <h1>Welcome back, <span id="userName">Writer</span>!</h1>
+        <p>Your ideas deserve to be heard. Continue writing, explore your work, and share your stories.</p>
+
+        <div class="dashboard-actions">
+            <button class="button primary-button" id="createBlogBtn">+ Create New Blog</button>
+            <a href="index.html" class="button secondary-btn">Explore Stories ↗</a>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-heading">
+            <h2>Your Stories</h2>
+            <span id="blogCount">0 blogs</span>
+        </div>
+
+        <div id="blogContainer" class="blog-grid"></div>
+    </section>
+
+</main>
+
+<footer class="footer">
+    <a href="index.html" class="logo">Blog<span>Space.</span></a>
+    <p>Made for curious minds and creative thinkers.</p>
+    <span>© 2026 BlogSpace</span>
+</footer>
+
+<script>
+    const currentUser = JSON.parse(
+        localStorage.getItem("blogspace_currentUser") || "null"
+    );
+
+    if (!currentUser) {
+        window.location.replace("login.html");
+    } else {
+        document.getElementById("userName").textContent = currentUser.name;
+    }
+
+    function getBlogs() {
+        try {
+            const blogs = JSON.parse(localStorage.getItem("blogspace_blogs")) || [];
+            return Array.isArray(blogs) ? blogs : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function renderBlogs() {
+        if (!currentUser) return;
+
+        const container = document.getElementById("blogContainer");
+
+        const blogs = getBlogs().filter(function(blog) {
+            return blog.authorEmail === currentUser.email;
+        });
+
+        document.getElementById("blogCount").textContent =
+            blogs.length + (blogs.length === 1 ? " blog" : " blogs");
+
+        container.replaceChildren();
+
+        if (blogs.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.style.gridColumn = "1 / -1";
+
+            const heading = document.createElement("h3");
+            heading.textContent = "Your story starts here.";
+
+            const paragraph = document.createElement("p");
+            paragraph.textContent = "You haven't published any blogs yet.";
+
+            const link = document.createElement("a");
+            link.href = "create-blog.html";
+            link.className = "button primary-button";
+            link.textContent = "Write Your First Blog";
+
+            empty.append(heading, paragraph, link);
+            container.appendChild(empty);
+            return;
+        }
+
+        blogs.slice().reverse().forEach(function(blog) {
+            const card = document.createElement("article");
+            card.className = "blog-card";
+
+            const category = document.createElement("span");
+            category.className = "blog-category";
+            category.textContent = blog.category || "General";
+
+            const heading = document.createElement("h3");
+            heading.textContent = blog.title;
+
+            const paragraph = document.createElement("p");
+            const content = blog.content || "";
+            paragraph.textContent = content.length > 140
+                ? content.slice(0, 140) + "..."
+                : content;
+
+            const date = document.createElement("small");
+            date.textContent = blog.date || "";
+
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "delete-btn";
+            deleteButton.textContent = "Delete Blog";
+
+            deleteButton.addEventListener("click", function() {
+                if (!confirm("Are you sure you want to delete this blog?")) return;
+
+                const remaining = getBlogs().filter(function(item) {
+                    return item.id !== blog.id ||
+                           item.authorEmail !== currentUser.email;
+                });
+
+                localStorage.setItem("blogspace_blogs", JSON.stringify(remaining));
+                renderBlogs();
+            });
+
+            card.append(category, heading, paragraph, date, deleteButton);
+            container.appendChild(card);
+        });
+    }
+
+    document.getElementById("createBlogBtn").addEventListener("click", function() {
+        window.location.href = "create-blog.html";
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+        localStorage.removeItem("blogspace_currentUser");
+        window.location.href = "login.html";
+    });
+
+    if (currentUser) renderBlogs();
+</script>
+
+</body>
+</html>

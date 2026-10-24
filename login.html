@@ -1,0 +1,144 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | BlogSpace</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .auth-section {
+            min-height: 78vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 60px;
+            padding: 60px 10%;
+        }
+        .auth-intro h1 {
+            font-size: clamp(36px, 4vw, 55px);
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+        .auth-intro h1 span { color: var(--primary); }
+        .auth-intro p { color: var(--muted); line-height: 1.9; }
+        .auth-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 38px;
+            box-shadow: 0 15px 45px rgba(0,0,0,.04);
+        }
+        .auth-card h2 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .auth-subtitle { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+        .form-group { margin-bottom: 19px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 7px; }
+        .form-group input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            font: inherit;
+            outline: none;
+        }
+        .form-group input:focus { border-color: var(--primary); }
+        .auth-submit {
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            font: inherit;
+            margin-top: 5px;
+        }
+        .auth-switch { text-align: center; font-size: 13px; margin-top: 22px; color: var(--muted); }
+        .auth-switch a { color: var(--primary); font-weight: 700; }
+        .auth-message { font-size: 13px; margin-top: 15px; color: var(--primary-dark); }
+        @media (max-width: 750px) {
+            .auth-section { grid-template-columns: 1fr; padding: 40px 6%; gap: 30px; }
+            .auth-card { padding: 26px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <a href="index.html" class="logo">Blog<span>Space.</span></a>
+        <nav class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="login.html" class="active">Login</a>
+            <a href="register.html" class="nav-button">Get Started</a>
+        </nav>
+    </header><main class="auth-section">
+    <section class="auth-intro">
+        <span class="eyebrow">WELCOME BACK</span>
+        <h1>Your next idea<br>starts <span>here.</span></h1>
+        <p>Sign in to continue exploring stories, sharing ideas, and connecting with a community of curious minds.</p>
+    </section>
+
+    <section class="auth-card">
+        <h2>Welcome back!</h2>
+        <p class="auth-subtitle">Enter your details to sign in.</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email address</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="button primary-button auth-submit">Sign In ↗</button>
+            <p id="loginMessage" class="auth-message" role="status"></p>
+        </form>
+
+        <p class="auth-switch">Don't have an account? <a href="register.html">Create one</a></p>
+    </section>
+</main>
+
+<footer class="footer">
+    <a href="index.html" class="logo">Blog<span>Space.</span></a>
+    <p>Made for curious minds and creative thinkers.</p>
+    <span>© 2026 BlogSpace</span>
+</footer>
+
+<script src="script.js"></script>
+<script>
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+        const password = document.getElementById("loginPassword").value;
+        const message = document.getElementById("loginMessage");
+
+        let users = [];
+
+        try {
+            users = JSON.parse(localStorage.getItem("blogspace_users")) || [];
+        } catch (error) {
+            message.textContent = "Unable to read account data. Please try again.";
+            return;
+        }
+
+        const user = users.find(function(item) {
+            return item.email.toLowerCase() === email && item.password === password;
+        });
+
+        if (!user) {
+            message.textContent = "Account not found or password is incorrect. Please register first.";
+            return;
+        }
+
+        localStorage.setItem("blogspace_currentUser", JSON.stringify({
+            name: user.name,
+            email: user.email
+        }));
+
+        window.location.href = "dashboard.html";
+    });
+</script>
+
+</body>
+</html>
