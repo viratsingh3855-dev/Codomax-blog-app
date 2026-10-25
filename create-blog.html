@@ -1,152 +1,310 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create a Blog | BlogSpace</title>
-    <link rel="stylesheet" href="style.css"><style>
-    .editor-container {
-        max-width: 850px;
-        margin: 55px auto;
-        padding: 0 25px;
-    }
 
-    .editor-heading {
-        margin-bottom: 30px;
-    }
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .editor-heading h1 {
-        font-family: 'Manrope', sans-serif;
-        font-size: clamp(30px, 5vw, 44px);
-        margin-bottom: 10px;
-    }
-
-    .editor-heading p {
-        color: var(--muted);
-    }
-
-    .editor-card {
-        background: white;
-        padding: 35px;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-    }
-
-    .form-group {
-        margin-bottom: 23px;
-    }
-
-    .form-group label {
-        display: block;
-        font-size: 13px;
-        font-weight: 700;
-        margin-bottom: 9px;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        width: 100%;
-        padding: 14px;
-        border: 1px solid var(--border);
-        border-radius: 7px;
-        font: inherit;
-        background: white;
-        outline: none;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        border-color: var(--primary);
-    }
-
-    .form-group textarea {
-        min-height: 230px;
-        resize: vertical;
-        line-height: 1.8;
-    }
-
-    .editor-actions {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-top: 25px;
-    }
-
-    .editor-actions button {
-        cursor: pointer;
-        font: inherit;
-    }
-
-    .editor-message {
-        margin-top: 18px;
-        font-size: 14px;
-    }
-
-    .word-count {
-        color: var(--muted);
-        text-align: right;
-        font-size: 12px;
-        margin-top: 6px;
-    }
-
-    @media (max-width: 600px) {
-        .editor-card {
-            padding: 22px;
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #f5f6ff;
+            background: #0b1020;
+            min-height: 100vh;
         }
-    }
-</style>
 
-</head><body><header class="navbar">
+        a { color: inherit; text-decoration: none; }
+
+        .navbar {
+            min-height: 76px;
+            padding: 17px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid #252c43;
+        }
+
+        .logo { font-size: 27px; font-weight: 800; }
+        .logo span { color: #a18aff; }
+
+        .nav-links { display: flex; align-items: center; gap: 25px; }
+        .nav-links a { color: #c2c9dc; font-size: 14px; font-weight: 600; }
+        .nav-links a:hover { color: #b4a4ff; }
+
+        .editor-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: auto;
+            padding: 55px 25px 75px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 17px;
+            padding: 8px 13px;
+            border: 1px solid #39345d;
+            border-radius: 30px;
+            color: #b8a9ff;
+            background: #19152f;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            margin-bottom: 13px;
+            font-size: clamp(36px, 5vw, 54px);
+            letter-spacing: -1.5px;
+        }
+
+        h1 span { color: #a18aff; }
+
+        .description {
+            color: #a3aec8;
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .editor-card {
+            padding: 35px;
+            border: 1px solid #2c3451;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #171d35, #11172a);
+        }
+
+        .card-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2d3550;
+        }
+
+        .card-heading h2 { font-size: 21px; }
+
+        .badge {
+            color: #b8a9ff;
+            background: #211b40;
+            border: 1px solid #39345d;
+            padding: 7px 11px;
+            border-radius: 30px;
+            font-size: 12px;
+        }
+
+        .form-group { margin-bottom: 24px; }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #e6eaff;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .required { color: #b29aff; }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px 16px;
+            border: 1px solid #35405f;
+            border-radius: 10px;
+            outline: none;
+            color: #f5f6ff;
+            background: #0e1529;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input { height: 53px; }
+        select { cursor: pointer; }
+        select option { background: #11172a; color: white; }
+
+        input::placeholder, textarea::placeholder { color: #77839f; }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #8a78ff;
+            box-shadow: 0 0 0 3px #8a78ff20;
+        }
+
+        textarea {
+            min-height: 280px;
+            resize: vertical;
+            line-height: 1.8;
+        }
+
+        .hint {
+            margin-top: 8px;
+            color: #8390ad;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .toolbar label { margin-bottom: 10px; }
+
+        .counter {
+            color: #96a1bd;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 23px;
+            border-top: 1px solid #2d3550;
+        }
+
+        .button {
+            min-height: 48px;
+            padding: 13px 22px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .primary {
+            color: white;
+            background: linear-gradient(100deg, #596dff, #9659f5);
+        }
+
+        .secondary {
+            color: #d2d8eb;
+            border-color: #414a69;
+            background: #1b223b;
+        }
+
+        .button:disabled { opacity: .65; cursor: wait; }
+
+        #blogMessage {
+            display: none;
+            margin-top: 20px;
+            padding: 13px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        #blogMessage.success {
+            display: block;
+            color: #91efc1;
+            background: #123326;
+        }
+
+        #blogMessage.error {
+            display: block;
+            color: #ffabb7;
+            background: #391b2a;
+        }
+
+        #blogMessage.info {
+            display: block;
+            color: #bac7ff;
+            background: #1a2548;
+        }
+
+        footer {
+            padding: 25px 7%;
+            border-top: 1px solid #252c43;
+            color: #8793ae;
+            text-align: center;
+            font-size: 13px;
+            line-height: 2;
+        }
+
+        @media (max-width: 600px) {
+            .navbar { padding: 17px 5%; }
+            .logo { font-size: 22px; }
+            .nav-links { gap: 12px; }
+            .nav-links a { font-size: 12px; }
+            .editor-container { padding: 38px 16px 50px; }
+            .editor-card { padding: 22px 17px; }
+            .card-heading h2 { font-size: 17px; }
+            textarea { min-height: 230px; }
+            .button { flex: 1; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
     <a href="index.html" class="logo">Blog<span>Space.</span></a>
 
     <nav class="nav-links">
         <a href="index.html">Home</a>
         <a href="dashboard.html">Dashboard</a>
-        <a href="login.html">Login</a>
+        <a href="#" id="logoutLink">Logout</a>
     </nav>
 </header>
 
 <main class="editor-container">
+    <span class="eyebrow">✦ YOUR CREATIVE SPACE</span>
+    <h1>Write your <span>story.</span></h1>
 
-    <div class="editor-heading">
-        <span class="eyebrow">YOUR CREATIVE SPACE</span>
-        <h1>Write your story.</h1>
-        <p>Every great blog begins with an idea. Turn yours into a story worth sharing.</p>
-    </div>
+    <p class="description">
+        Turn your ideas into a story worth sharing with the world.
+    </p>
 
     <section class="editor-card">
+        <div class="card-heading">
+            <h2>Create a New Blog</h2>
+            <span class="badge">✍ Blog Editor</span>
+        </div>
 
         <form id="blogForm">
-
             <div class="form-group">
-                <label for="blogTitle">Blog Title *</label>
+                <label for="blogTitle">Blog Title <span class="required">*</span></label>
                 <input
-                    type="text"
                     id="blogTitle"
+                    type="text"
                     placeholder="Give your story a meaningful title"
+                    minlength="3"
                     maxlength="120"
                     required
                 >
             </div>
 
             <div class="form-group">
-                <label for="blogCategory">Category *</label>
+                <label for="blogCategory">Category <span class="required">*</span></label>
                 <select id="blogCategory" required>
                     <option value="">Choose a category</option>
-                    <option value="Technology">Technology</option>
-                    <option value="Education">Education</option>
-                    <option value="Personal Growth">Personal Growth</option>
-                    <option value="Lifestyle">Lifestyle</option>
-                    <option value="Travel">Travel</option>
-                    <option value="Creativity">Creativity</option>
-                    <option value="Other">Other</option>
+                    <option>Technology</option>
+                    <option>Education</option>
+                    <option>Personal Growth</option>
+                    <option>Lifestyle</option>
+                    <option>Travel</option>
+                    <option>Creativity</option>
+                    <option>Other</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="blogContent">Your Story *</label>
+                <div class="toolbar">
+                    <label for="blogContent">Your Story <span class="required">*</span></label>
+                    <span class="counter"><span id="characterCount">0</span>/10000</span>
+                </div>
+
                 <textarea
                     id="blogContent"
                     placeholder="Start writing your thoughts here..."
@@ -155,112 +313,144 @@
                     required
                 ></textarea>
 
-                <div class="word-count">
-                    <span id="characterCount">0</span>/10000 characters
-                </div>
+                <p class="hint">Write at least 20 characters.</p>
             </div>
 
-            <div class="editor-actions">
-                <button type="submit" class="button primary-button">
+            <div class="actions">
+                <button type="submit" class="button primary" id="publishButton">
                     Publish Blog ↗
                 </button>
 
-                <a href="dashboard.html" class="button secondary-button">
-                    Cancel
-                </a>
+                <a href="dashboard.html" class="button secondary">Cancel</a>
             </div>
 
-            <p id="blogMessage" class="editor-message" role="status"></p>
-
+            <p id="blogMessage" role="status" aria-live="polite"></p>
         </form>
-
     </section>
-
 </main>
 
-<footer class="footer">
-    <a href="index.html" class="logo">Blog<span>Space.</span></a>
-    <p>Made for curious minds and creative thinkers.</p>
-    <span>© 2026 BlogSpace</span>
+<footer>
+    <strong>Blog<span style="color:#a18aff">Space.</span></strong><br>
+    Made for curious minds and creative thinkers · © 2026 BlogSpace
 </footer>
 
 <script>
-    const currentUser = JSON.parse(
-        localStorage.getItem("blogspace_currentUser") || "null"
-    );
+    const API_URL = "http://localhost:5000/api/blogs";
 
-    if (!currentUser) {
+    const blogForm = document.getElementById("blogForm");
+    const titleInput = document.getElementById("blogTitle");
+    const categoryInput = document.getElementById("blogCategory");
+    const contentInput = document.getElementById("blogContent");
+    const count = document.getElementById("characterCount");
+    const message = document.getElementById("blogMessage");
+    const publishButton = document.getElementById("publishButton");
+
+    let currentUser = null;
+
+    try {
+        currentUser = JSON.parse(
+            localStorage.getItem("blogspace_currentUser") || "null"
+        );
+    } catch (error) {
+        currentUser = null;
+    }
+
+    if (!currentUser || !currentUser.email) {
         window.location.replace("login.html");
     }
 
-    const blogContent = document.getElementById("blogContent");
-    const characterCount = document.getElementById("characterCount");
-    const blogMessage = document.getElementById("blogMessage");
+    function showMessage(text, type) {
+        message.textContent = text;
+        message.className = type;
+    }
 
-    blogContent.addEventListener("input", function() {
-        characterCount.textContent = blogContent.value.length;
+    contentInput.addEventListener("input", function () {
+        count.textContent = contentInput.value.length;
     });
 
-    document.getElementById("blogForm").addEventListener("submit", function(event) {
+    blogForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
-        if (!currentUser) {
+        if (!currentUser || !currentUser.email) {
             window.location.href = "login.html";
             return;
         }
 
-        const title = document.getElementById("blogTitle").value.trim();
-        const category = document.getElementById("blogCategory").value;
-        const content = blogContent.value.trim();
+        const title = titleInput.value.trim();
+        const category = categoryInput.value;
+        const content = contentInput.value.trim();
 
         if (title.length < 3) {
-            blogMessage.textContent = "Please enter a title with at least 3 characters.";
+            showMessage("Title must contain at least 3 characters.", "error");
+            return;
+        }
+
+        if (!category) {
+            showMessage("Please select a category.", "error");
             return;
         }
 
         if (content.length < 20) {
-            blogMessage.textContent = "Your story must contain at least 20 characters.";
+            showMessage("Your story must contain at least 20 characters.", "error");
             return;
         }
 
-        let blogs = [];
+        publishButton.disabled = true;
+        publishButton.textContent = "Publishing...";
+        showMessage("Saving your blog to the server...", "info");
 
         try {
-            blogs = JSON.parse(localStorage.getItem("blogspace_blogs")) || [];
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title,
+                    category: category,
+                    content: content,
+                    author: currentUser.name || currentUser.email.split("@")[0],
+                    authorEmail: currentUser.email
+                })
+            });
 
-            if (!Array.isArray(blogs)) {
-                blogs = [];
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to publish blog.");
             }
+
+            showMessage(
+                "Blog published successfully! Opening your dashboard...",
+                "success"
+            );
+
+            blogForm.reset();
+            count.textContent = "0";
+
+            setTimeout(function () {
+                window.location.href = "dashboard.html";
+            }, 1000);
+
         } catch (error) {
-            blogMessage.textContent = "Could not load saved blogs. Please try again.";
-            return;
+            console.error("Publish blog error:", error);
+
+            showMessage(
+                error.message.includes("fetch")
+                    ? "Cannot connect to the backend. Please make sure your Node.js server is running on port 5000."
+                    : error.message,
+                "error"
+            );
+        } finally {
+            publishButton.disabled = false;
+            publishButton.textContent = "Publish Blog ↗";
         }
+    });
 
-        const newBlog = {
-            id: Date.now(),
-            title: title,
-            category: category,
-            content: content,
-            author: currentUser.name,
-            authorEmail: currentUser.email,
-            date: new Date().toLocaleDateString()
-        };
-
-        blogs.push(newBlog);
-
-        try {
-            localStorage.setItem("blogspace_blogs", JSON.stringify(blogs));
-        } catch (error) {
-            blogMessage.textContent = "Could not save your blog. Please try again.";
-            return;
-        }
-
-        blogMessage.style.color = "#385237";
-        blogMessage.textContent = "Blog published successfully! Opening your dashboard...";
-
-        setTimeout(function() {
-            window.location.href = "dashboard.html";
-        }, 1000);
+    document.getElementById("logoutLink").addEventListener("click", function (event) {
+        event.preventDefault();
+        localStorage.removeItem("blogspace_currentUser");
+        window.location.href = "login.html";
     });
 </script>
 

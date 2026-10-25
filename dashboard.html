@@ -1,134 +1,326 @@
-<!DOCTYPE html><html lang="en">
+```html
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | BlogSpace</title>
-    <link rel="stylesheet" href="style.css"><style>
-    .dashboard {
-        max-width: 1100px;
-        margin: auto;
-        padding: 55px 6%;
-    }
 
-    .welcome {
-        background: #f0f2e9;
-        padding: 35px;
-        border-radius: 16px;
-        margin-bottom: 35px;
-    }
+    <style>
+        :root {
+            --bg: #0b0b18;
+            --card: #15152b;
+            --purple: #8b5cf6;
+            --blue: #4f8cff;
+            --text: #f5f5ff;
+            --muted: #c1c1dc;
+            --border: #30304d;
+            --danger: #ef4444;
+        }
 
-    .welcome h1 {
-        font-size: clamp(28px, 4vw, 42px);
-        margin: 12px 0;
-    }
+        * { box-sizing: border-box; }
 
-    .welcome p {
-        color: #666;
-        line-height: 1.7;
-    }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at top left, #8b5cf615, transparent 35%), var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
 
-    .dashboard-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-top: 22px;
-    }
+        a { color: inherit; text-decoration: none; }
 
-    .dashboard-actions button {
-        cursor: pointer;
-        font: inherit;
-    }
+        .navbar {
+            min-height: 76px;
+            padding: 14px max(5%, calc((100% - 1160px) / 2));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+            background: #0b0b18;
+        }
 
-    .section-heading {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-        margin: 35px 0 20px;
-    }
+        .logo { font-size: 27px; font-weight: 800; }
+        .logo span { color: #a78bfa; }
 
-    .blog-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 22px;
-    }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
 
-    .blog-card {
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 24px;
-        background: white;
-    }
+        .nav-links a {
+            color: #e5e5f5;
+            font-size: 14px;
+            font-weight: 600;
+        }
 
-    .blog-card h3 {
-        margin: 12px 0;
-    }
+        .nav-links a:hover { color: #b9a4ff; }
 
-    .blog-card p {
-        color: var(--muted);
-        line-height: 1.7;
-        overflow-wrap: anywhere;
-    }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 11px 17px;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
 
-    .blog-category {
-        font-size: 11px;
-        letter-spacing: 1px;
-        color: var(--primary);
-        font-weight: 700;
-        text-transform: uppercase;
-    }
+        .primary {
+            color: white;
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+        }
 
-    .delete-btn {
-        margin-top: 16px;
-        border: 1px solid #ddd;
-        background: white;
-        padding: 9px 14px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
+        .secondary {
+            color: #f5f5ff;
+            border-color: #454566;
+            background: #191932;
+        }
 
-    .empty-state {
-        padding: 35px;
-        text-align: center;
-        border: 1px dashed #ccc;
-        border-radius: 12px;
-        color: #666;
-        line-height: 1.8;
-    }
+        .delete-btn {
+            margin-top: 18px;
+            color: white;
+            background: #7f1d1d;
+            border: 1px solid #ef4444;
+            transition: background .2s;
+        }
 
-    .secondary-btn {
-        border: 1px solid var(--border);
-        background: white;
-        padding: 12px 18px;
-        border-radius: 7px;
-    }
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
 
-    @media (max-width: 600px) {
-        .welcome { padding: 24px; }
-        .section-heading { align-items: flex-start; flex-direction: column; }
-    }
-</style>
+        .delete-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
 
-</head><body><header class="navbar">
+        .dashboard {
+            width: min(1100px, calc(100% - 40px));
+            margin: auto;
+            padding: 50px 0 75px;
+        }
+
+        .welcome {
+            padding: clamp(25px, 5vw, 44px);
+            margin-bottom: 40px;
+            border: 1px solid #3b3762;
+            border-radius: 20px;
+            background: radial-gradient(ellipse at top right, #4f8cff30, transparent 48%), linear-gradient(135deg, #19152f, #151b35);
+        }
+
+        .eyebrow {
+            color: #c4b5fd;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.1px;
+        }
+
+        h1 {
+            margin: 15px 0;
+            font-size: clamp(30px, 5vw, 45px);
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+        }
+
+        #userName { color: #c4b5fd; }
+
+        .welcome p {
+            max-width: 680px;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: clamp(25px, 4vw, 32px);
+        }
+
+        #blogCount {
+            padding: 8px 13px;
+            border: 1px solid #393657;
+            border-radius: 30px;
+            background: #19172e;
+            color: #d0c2ff;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .blog-card {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: var(--card);
+            transition: transform .2s, border-color .2s;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-3px);
+            border-color: #69609c;
+        }
+
+        .category {
+            color: #c4b5fd;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+        }
+
+        .blog-card h3 {
+            margin: 13px 0 10px;
+            font-size: 20px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .blog-card p {
+            margin: 0 0 16px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .blog-card small {
+            margin-top: auto;
+            padding-top: 10px;
+            color: #a7a7c4;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            padding: 42px 22px;
+            border: 1px dashed #454566;
+            border-radius: 15px;
+            background: #15152b;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .empty-state h3 {
+            margin: 0 0 12px;
+            color: var(--text);
+            font-size: 23px;
+        }
+
+        .empty-state p {
+            margin: 0 0 22px;
+            line-height: 1.8;
+        }
+
+        #statusMessage {
+            margin-bottom: 20px;
+            color: #bac7ff;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+            padding: 25px max(5%, calc((100% - 1100px) / 2));
+            border-top: 1px solid var(--border);
+            color: #a7a7c4;
+            font-size: 13px;
+        }
+
+        @media (max-width: 850px) {
+            .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 18px 20px;
+            }
+
+            .nav-links { gap: 14px; }
+            .dashboard { padding: 32px 0 50px; }
+            .blog-grid { grid-template-columns: 1fr; }
+
+            .dashboard-actions { flex-direction: column; }
+            .dashboard-actions .button { width: 100%; }
+
+            .section-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .footer {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
     <a href="index.html" class="logo">Blog<span>Space.</span></a>
 
     <nav class="nav-links">
         <a href="index.html">Home</a>
         <a href="create-blog.html">Write a Blog</a>
-        <button id="logoutBtn" class="secondary-btn">Logout</button>
+        <button id="logoutBtn" class="button secondary" type="button">Logout</button>
     </nav>
 </header>
 
 <main class="dashboard">
 
     <section class="welcome">
-        <span class="blog-category">YOUR PERSONAL SPACE</span>
+        <span class="eyebrow">YOUR PERSONAL SPACE</span>
+
         <h1>Welcome back, <span id="userName">Writer</span>!</h1>
-        <p>Your ideas deserve to be heard. Continue writing, explore your work, and share your stories.</p>
+
+        <p>
+            Your ideas deserve to be heard. Continue writing, manage your stories,
+            and share your creativity with the world.
+        </p>
 
         <div class="dashboard-actions">
-            <button class="button primary-button" id="createBlogBtn">+ Create New Blog</button>
-            <a href="index.html" class="button secondary-btn">Explore Stories ↗</a>
+            <a href="create-blog.html" class="button primary">+ Create New Blog</a>
+            <a href="index.html" class="button secondary">Explore Stories ↗</a>
         </div>
     </section>
 
@@ -138,6 +330,7 @@
             <span id="blogCount">0 blogs</span>
         </div>
 
+        <p id="statusMessage" role="status" aria-live="polite"></p>
         <div id="blogContainer" class="blog-grid"></div>
     </section>
 
@@ -145,117 +338,209 @@
 
 <footer class="footer">
     <a href="index.html" class="logo">Blog<span>Space.</span></a>
-    <p>Made for curious minds and creative thinkers.</p>
-    <span>© 2026 BlogSpace</span>
+    <span>Made for curious minds and creative thinkers · © 2026 BlogSpace</span>
 </footer>
 
 <script>
-    const currentUser = JSON.parse(
-        localStorage.getItem("blogspace_currentUser") || "null"
-    );
+    const API_URL = "http://localhost:5000/api/blogs";
 
-    if (!currentUser) {
-        window.location.replace("login.html");
-    } else {
-        document.getElementById("userName").textContent = currentUser.name;
+    let currentUser = null;
+
+    try {
+        currentUser = JSON.parse(
+            localStorage.getItem("blogspace_currentUser") || "null"
+        );
+    } catch (error) {
+        currentUser = null;
     }
 
-    function getBlogs() {
+    if (!currentUser || !currentUser.email) {
+        window.location.replace("login.html");
+    } else {
+        document.getElementById("userName").textContent =
+            currentUser.name || "Writer";
+        loadBlogs();
+    }
+
+    function showEmptyState(title, description, showButton = false) {
+        const container = document.getElementById("blogContainer");
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+
+        const paragraph = document.createElement("p");
+        paragraph.textContent = description;
+
+        empty.append(heading, paragraph);
+
+        if (showButton) {
+            const link = document.createElement("a");
+            link.href = "create-blog.html";
+            link.className = "button primary";
+            link.textContent = "Write Your First Blog";
+            empty.appendChild(link);
+        }
+
+        container.replaceChildren(empty);
+    }
+
+    async function loadBlogs() {
+        const container = document.getElementById("blogContainer");
+        const status = document.getElementById("statusMessage");
+
+        status.textContent = "Loading your blogs...";
+        container.replaceChildren();
+
         try {
-            const blogs = JSON.parse(localStorage.getItem("blogspace_blogs")) || [];
-            return Array.isArray(blogs) ? blogs : [];
-        } catch {
-            return [];
+            const response = await fetch(API_URL);
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to load blogs.");
+            }
+
+            if (!Array.isArray(result)) {
+                throw new Error("The server returned an unexpected response.");
+            }
+
+            const myBlogs = result.filter(function(blog) {
+                if (blog.authorEmail) {
+                    return blog.authorEmail.toLowerCase() ===
+                        currentUser.email.toLowerCase();
+                }
+
+                return Boolean(currentUser.name) &&
+                    blog.author === currentUser.name;
+            });
+
+            document.getElementById("blogCount").textContent =
+                myBlogs.length + (myBlogs.length === 1 ? " blog" : " blogs");
+
+            status.textContent = "";
+
+            if (myBlogs.length === 0) {
+                showEmptyState(
+                    "Your story starts here.",
+                    "You haven't published any blogs yet.",
+                    true
+                );
+                return;
+            }
+
+            container.replaceChildren();
+
+            myBlogs.forEach(function(blog) {
+                const card = document.createElement("article");
+                card.className = "blog-card";
+
+                const category = document.createElement("span");
+                category.className = "category";
+                category.textContent = blog.category || "General";
+
+                const heading = document.createElement("h3");
+                heading.textContent = blog.title || "Untitled Blog";
+
+                const paragraph = document.createElement("p");
+                const content = blog.content || "";
+                paragraph.textContent = content.length > 180
+                    ? content.slice(0, 180) + "..."
+                    : content;
+
+                const date = document.createElement("small");
+                const dateValue = blog.date || blog.createdAt || "";
+                date.textContent = dateValue
+                    ? "Published: " + (
+                        isNaN(Date.parse(dateValue))
+                            ? dateValue
+                            : new Date(dateValue).toLocaleDateString()
+                    )
+                    : "Published recently";
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className = "button delete-btn";
+                deleteButton.textContent = "🗑 Delete Blog";
+
+                deleteButton.addEventListener("click", function() {
+                    deleteBlog(blog, deleteButton);
+                });
+
+                card.append(category, heading, paragraph, date, deleteButton);
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Dashboard loading error:", error);
+
+            status.textContent = "";
+            document.getElementById("blogCount").textContent = "—";
+
+            showEmptyState(
+                "Couldn't load your stories.",
+                "Please check that the backend server is running on port 5000, then refresh this page."
+            );
         }
     }
 
-    function renderBlogs() {
-        if (!currentUser) return;
-
-        const container = document.getElementById("blogContainer");
-
-        const blogs = getBlogs().filter(function(blog) {
-            return blog.authorEmail === currentUser.email;
-        });
-
-        document.getElementById("blogCount").textContent =
-            blogs.length + (blogs.length === 1 ? " blog" : " blogs");
-
-        container.replaceChildren();
-
-        if (blogs.length === 0) {
-            const empty = document.createElement("div");
-            empty.className = "empty-state";
-            empty.style.gridColumn = "1 / -1";
-
-            const heading = document.createElement("h3");
-            heading.textContent = "Your story starts here.";
-
-            const paragraph = document.createElement("p");
-            paragraph.textContent = "You haven't published any blogs yet.";
-
-            const link = document.createElement("a");
-            link.href = "create-blog.html";
-            link.className = "button primary-button";
-            link.textContent = "Write Your First Blog";
-
-            empty.append(heading, paragraph, link);
-            container.appendChild(empty);
+    async function deleteBlog(blog, button) {
+        if (blog.id === undefined || blog.id === null) {
+            alert("This blog has no ID, so it cannot be deleted from the server.");
             return;
         }
 
-        blogs.slice().reverse().forEach(function(blog) {
-            const card = document.createElement("article");
-            card.className = "blog-card";
+        const confirmed = confirm(
+            'Are you sure you want to delete "' +
+            (blog.title || "this blog") +
+            '"? This action cannot be undone.'
+        );
 
-            const category = document.createElement("span");
-            category.className = "blog-category";
-            category.textContent = blog.category || "General";
+        if (!confirmed) return;
 
-            const heading = document.createElement("h3");
-            heading.textContent = blog.title;
+        button.disabled = true;
+        button.textContent = "Deleting...";
 
-            const paragraph = document.createElement("p");
-            const content = blog.content || "";
-            paragraph.textContent = content.length > 140
-                ? content.slice(0, 140) + "..."
-                : content;
+        try {
+            const response = await fetch(
+                API_URL + "/" + encodeURIComponent(blog.id),
+                {
+                    method: "DELETE"
+                }
+            );
 
-            const date = document.createElement("small");
-            date.textContent = blog.date || "";
-
-            const deleteButton = document.createElement("button");
-            deleteButton.className = "delete-btn";
-            deleteButton.textContent = "Delete Blog";
-
-            deleteButton.addEventListener("click", function() {
-                if (!confirm("Are you sure you want to delete this blog?")) return;
-
-                const remaining = getBlogs().filter(function(item) {
-                    return item.id !== blog.id ||
-                           item.authorEmail !== currentUser.email;
-                });
-
-                localStorage.setItem("blogspace_blogs", JSON.stringify(remaining));
-                renderBlogs();
+            const result = await response.json().catch(function() {
+                return {};
             });
 
-            card.append(category, heading, paragraph, date, deleteButton);
-            container.appendChild(card);
-        });
-    }
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Delete API is unavailable. Please update backend/server.js."
+                );
+            }
 
-    document.getElementById("createBlogBtn").addEventListener("click", function() {
-        window.location.href = "create-blog.html";
-    });
+            document.getElementById("statusMessage").textContent =
+                "Blog deleted successfully!";
+
+            await loadBlogs();
+
+        } catch (error) {
+            console.error("Delete blog error:", error);
+            alert(error.message || "Unable to delete this blog.");
+
+            button.disabled = false;
+            button.textContent = "🗑 Delete Blog";
+        }
+    }
 
     document.getElementById("logoutBtn").addEventListener("click", function() {
         localStorage.removeItem("blogspace_currentUser");
+        localStorage.removeItem("blogspace_user");
         window.location.href = "login.html";
     });
-
-    if (currentUser) renderBlogs();
 </script>
 
 </body>
 </html>
+```
