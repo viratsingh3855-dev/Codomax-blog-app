@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | BlogSpace</title>
+    <style>
+        :root {
+            --bg: #0b0b18;
+            --surface: #15152b;
+            --text: #f5f5ff;
+            --muted: #c1c1dc;
+            --border: #30304d;
+            --purple: #8b5cf6;
+            --blue: #4f8cff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at top left, #8b5cf615, transparent 35%), var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .navbar {
+            min-height: 76px;
+            padding: 14px max(5%, calc((100% - 1160px) / 2));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { font-size: 27px; font-weight: 800; }
+        .logo span { color: #a78bfa; }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 11px 17px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            font-weight: 700;
+        }
+
+        main {
+            width: min(820px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 55px 0 80px;
+        }
+
+        .article {
+            padding: clamp(24px, 6vw, 48px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+        }
+
+        .category {
+            color: #c4b5fd;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 16px 0;
+            font-size: clamp(32px, 7vw, 54px);
+            line-height: 1.15;
+            overflow-wrap: anywhere;
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            margin-bottom: 28px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .content {
+            color: #dedeea;
+            font-size: 18px;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .status {
+            padding: 50px 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <a href="index.html" class="logo">Blog<span>Space.</span></a>
+        <a href="dashboard.html" class="button">Back to Dashboard</a>
+    </header>
+
+    <main>
+        <article id="article" class="article">
+            <p class="status">Loading blog...</p>
+        </article>
+    </main>
+
+    <script>
+        const API_URL = "http://localhost:5000/api/blogs";
+        const article = document.getElementById("article");
+        const blogId = new URLSearchParams(window.location.search).get("id");
+
+        async function loadBlog() {
+            if (!blogId) {
+                article.innerHTML = '<p class="status">This blog link is missing an ID.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL + "/" + encodeURIComponent(blogId));
+                const result = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(result.message || "Unable to load this blog.");
+                }
+
+                document.title = (result.title || "Blog") + " | BlogSpace";
+
+                article.innerHTML = `
+                    <span class="category">${escapeHtml(result.category || "General")}</span>
+                    <h1>${escapeHtml(result.title || "Untitled Blog")}</h1>
+                    <div class="meta">
+                        <span>By ${escapeHtml(result.author || "Anonymous")}</span>
+                        <span>${escapeHtml(formatDate(result))}</span>
+                    </div>
+                    <div class="content">${escapeHtml(result.content || "")}</div>
+                    <div class="actions">
+                        <a href="dashboard.html" class="button">Back to Dashboard</a>
+                    </div>
+                `;
+            } catch (error) {
+                article.innerHTML = '<p class="status">' + escapeHtml(error.message) + '</p>';
+            }
+        }
+
+        function formatDate(blog) {
+            const value = blog.date || blog.createdAt;
+            if (!value) return "Published recently";
+            if (isNaN(Date.parse(value))) return "Published: " + value;
+            return "Published: " + new Date(value).toLocaleDateString();
+        }
+
+        function escapeHtml(value) {
+            const element = document.createElement("div");
+            element.textContent = String(value);
+            return element.innerHTML;
+        }
+
+        loadBlog();
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,8 +85,24 @@
             background: #191932;
         }
 
-        .delete-btn {
+        .card-actions {
             margin-top: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .read-btn {
+            color: #d8ccff;
+            border-color: #69609c;
+            background: #252044;
+        }
+
+        .read-btn:hover {
+            background: #302856;
+        }
+
+        .delete-btn {
             color: white;
             background: #7f1d1d;
             border: 1px solid #ef4444;
@@ -458,6 +474,17 @@
                     )
                     : "Published recently";
 
+                const actions = document.createElement("div");
+                actions.className = "card-actions";
+
+                const blogId = blog._id || blog.id;
+                const readLink = document.createElement("a");
+                readLink.className = "button read-btn";
+                readLink.textContent = "Read full blog";
+                readLink.href = blogId
+                    ? "blog-detail.html?id=" + encodeURIComponent(blogId)
+                    : "#";
+
                 const deleteButton = document.createElement("button");
                 deleteButton.type = "button";
                 deleteButton.className = "button delete-btn";
@@ -467,7 +494,8 @@
                     deleteBlog(blog, deleteButton);
                 });
 
-                card.append(category, heading, paragraph, date, deleteButton);
+                actions.append(readLink, deleteButton);
+                card.append(category, heading, paragraph, date, actions);
                 container.appendChild(card);
             });
 
@@ -485,7 +513,9 @@
     }
 
     async function deleteBlog(blog, button) {
-        if (blog.id === undefined || blog.id === null) {
+        const blogId = blog._id || blog.id;
+
+        if (!blogId) {
             alert("This blog has no ID, so it cannot be deleted from the server.");
             return;
         }
@@ -503,7 +533,7 @@
 
         try {
             const response = await fetch(
-                API_URL + "/" + encodeURIComponent(blog.id),
+                API_URL + "/" + encodeURIComponent(blogId),
                 {
                     method: "DELETE"
                 }
@@ -543,4 +573,3 @@
 
 </body>
 </html>
-```

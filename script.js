@@ -87,21 +87,13 @@ async function handleRegistration(event) {
 
     const button = form.querySelector('button[type="submit"]');
 
-    if (button) {
-        button.disabled = true;
-    }
+    if (button) button.disabled = true;
 
     try {
         const response = await fetch(`${API_URL}/register`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                name: name,
-                email: email,
-                password: password
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password })
         });
 
         const data = await response.json();
@@ -111,11 +103,7 @@ async function handleRegistration(event) {
             return;
         }
 
-        showMessage(
-            "Registration successful! Redirecting to login...",
-            "success"
-        );
-
+        showMessage("Registration successful! Redirecting to login...", "success");
         form.reset();
 
         setTimeout(function () {
@@ -124,15 +112,9 @@ async function handleRegistration(event) {
 
     } catch (error) {
         console.error("Registration error:", error);
-
-        showMessage(
-            "Cannot connect to backend. Please check whether the server is running.",
-            "error"
-        );
+        showMessage("Cannot connect to backend. Please check whether the server is running.", "error");
     } finally {
-        if (button) {
-            button.disabled = false;
-        }
+        if (button) button.disabled = false;
     }
 }
 
@@ -153,20 +135,13 @@ async function handleLogin(event) {
         return;
     }
 
-    if (button) {
-        button.disabled = true;
-    }
+    if (button) button.disabled = true;
 
     try {
         const response = await fetch(`${API_URL}/login`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
         });
 
         const data = await response.json();
@@ -181,36 +156,17 @@ async function handleLogin(event) {
             email: data.user?.email || email
         };
 
-        // Save user information for dashboard and create-blog pages
-        localStorage.setItem(
-            "blogspace_currentUser",
-            JSON.stringify(user)
-        );
+        localStorage.setItem("blogspace_currentUser", JSON.stringify(user));
+        localStorage.setItem("blogspace_user", JSON.stringify(user));
 
-        // Keep compatibility with existing code
-        localStorage.setItem(
-            "blogspace_user",
-            JSON.stringify(user)
-        );
-
-        showMessage(
-            "Login successful! Opening dashboard...",
-            "success"
-        );
-
+        showMessage("Login successful! Opening dashboard...", "success");
         window.location.href = "dashboard.html";
 
     } catch (error) {
         console.error("Login error:", error);
-
-        showMessage(
-            "Cannot connect to backend. Please check whether the server is running.",
-            "error"
-        );
+        showMessage("Cannot connect to backend. Please check whether the server is running.", "error");
     } finally {
-        if (button) {
-            button.disabled = false;
-        }
+        if (button) button.disabled = false;
     }
 }
 
@@ -222,10 +178,8 @@ async function handleCreateBlog(event) {
     event.preventDefault();
 
     const form = event.currentTarget;
-
     const title = form.querySelector('[name="title"]')?.value.trim();
     const content = form.querySelector('[name="content"]')?.value.trim();
-
     const category =
         form.querySelector('[name="category"]')?.value.trim() || "General";
 
@@ -240,11 +194,9 @@ async function handleCreateBlog(event) {
 
     if (!user || !user.email) {
         showMessage("Please log in before creating a blog.", "error");
-
         setTimeout(function () {
             window.location.href = "login.html";
         }, 1000);
-
         return;
     }
 
@@ -254,21 +206,16 @@ async function handleCreateBlog(event) {
     }
 
     const button = form.querySelector('button[type="submit"]');
-
-    if (button) {
-        button.disabled = true;
-    }
+    if (button) button.disabled = true;
 
     try {
         const response = await fetch(`${API_URL}/blogs`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                title: title,
-                category: category,
-                content: content,
+                title,
+                category,
+                content,
                 author: user.name || user.email.split("@")[0],
                 authorEmail: user.email,
                 date: new Date().toLocaleDateString()
@@ -291,15 +238,9 @@ async function handleCreateBlog(event) {
 
     } catch (error) {
         console.error("Create blog error:", error);
-
-        showMessage(
-            "Cannot connect to backend. Please check whether the server is running.",
-            "error"
-        );
+        showMessage("Cannot connect to backend. Please check whether the server is running.", "error");
     } finally {
-        if (button) {
-            button.disabled = false;
-        }
+        if (button) button.disabled = false;
     }
 }
 
@@ -309,10 +250,7 @@ async function handleCreateBlog(event) {
 
 async function loadBlogs() {
     const blogList = document.getElementById("blogList");
-
-    if (!blogList) {
-        return;
-    }
+    if (!blogList) return;
 
     try {
         const response = await fetch(`${API_URL}/blogs`);
@@ -322,12 +260,10 @@ async function loadBlogs() {
         }
 
         const blogs = await response.json();
-
         blogList.replaceChildren();
 
         if (!Array.isArray(blogs) || blogs.length === 0) {
-            blogList.textContent =
-                "No blogs yet. Be the first to create one!";
+            blogList.textContent = "No blogs yet. Be the first to create one!";
             return;
         }
 
@@ -342,14 +278,75 @@ async function loadBlogs() {
             author.textContent = "By " + (blog.author || "Anonymous");
 
             article.append(title, content, author);
+
+            // MongoDB ID
+            const blogId = blog._id || blog.id;
+
+            if (blogId) {
+                article.dataset.blogId = blogId;
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.type = "button";
+
+                deleteButton.addEventListener("click", function () {
+                    deleteBlog(blogId, article, deleteButton);
+                });
+
+                article.appendChild(deleteButton);
+            } else {
+                console.warn("Blog has no ID:", blog);
+            }
+
             blogList.appendChild(article);
         });
 
     } catch (error) {
         console.error("Load blogs error:", error);
-
-        blogList.textContent =
-            "Unable to load blogs. Please try again.";
+        blogList.textContent = "Unable to load blogs. Please try again.";
     }
 }
-```
+
+// ==========================================
+// Delete Blog
+// ==========================================
+
+async function deleteBlog(blogId, article, button) {
+    if (!blogId) {
+        showMessage("This blog has no ID and cannot be deleted.", "error");
+        return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this blog?")) {
+        return;
+    }
+
+    button.disabled = true;
+
+    try {
+        const response = await fetch(
+            `${API_URL}/blogs/${encodeURIComponent(blogId)}`,
+            { method: "DELETE" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Could not delete blog.");
+        }
+
+        article.remove();
+        showMessage("Blog deleted successfully!", "success");
+
+        const blogList = document.getElementById("blogList");
+
+        if (blogList && !blogList.querySelector("article")) {
+            blogList.textContent = "No blogs yet. Be the first to create one!";
+        }
+
+    } catch (error) {
+        console.error("Delete blog error:", error);
+        showMessage(error.message || "Could not delete blog.", "error");
+        button.disabled = false;
+    }
+}
