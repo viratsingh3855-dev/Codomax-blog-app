@@ -102,6 +102,16 @@
             background: #302856;
         }
 
+        .edit-btn {
+            color: #dbeafe;
+            border-color: #42638f;
+            background: #172b46;
+        }
+
+        .edit-btn:hover {
+            background: #203b5e;
+        }
+
         .delete-btn {
             color: white;
             background: #7f1d1d;
@@ -183,6 +193,40 @@
             color: #d0c2ff;
             font-size: 13px;
             white-space: nowrap;
+        }
+
+        .blog-filters {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(200px, 260px);
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .blog-filters[hidden] {
+            display: none;
+        }
+
+        .blog-filters input,
+        .blog-filters select {
+            width: 100%;
+            min-height: 46px;
+            padding: 11px 14px;
+            border: 1px solid #393657;
+            border-radius: 9px;
+            outline: none;
+            color: var(--text);
+            background: #15152b;
+            font: inherit;
+        }
+
+        .blog-filters input:focus,
+        .blog-filters select:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px #8b5cf630;
+        }
+
+        .blog-filters input::placeholder {
+            color: #a7a7c4;
         }
 
         .blog-grid {
@@ -292,6 +336,7 @@
             .nav-links { gap: 14px; }
             .dashboard { padding: 32px 0 50px; }
             .blog-grid { grid-template-columns: 1fr; }
+            .blog-filters { grid-template-columns: 1fr; }
 
             .dashboard-actions { flex-direction: column; }
             .dashboard-actions .button { width: 100%; }
@@ -347,6 +392,17 @@
         </div>
 
         <p id="statusMessage" role="status" aria-live="polite"></p>
+        <div id="blogFilters" class="blog-filters" hidden>
+            <input
+                id="blogSearch"
+                type="search"
+                placeholder="Search your blogs..."
+                aria-label="Search your blogs"
+            >
+            <select id="categoryFilter" aria-label="Filter blogs by category">
+                <option value="">All categories</option>
+            </select>
+        </div>
         <div id="blogContainer" class="blog-grid"></div>
     </section>
 
@@ -361,6 +417,10 @@
     const API_URL = "http://localhost:5000/api/blogs";
 
     let currentUser = null;
+    let userBlogs = [];
+
+    document.getElementById("blogSearch").addEventListener("input", renderBlogs);
+    document.getElementById("categoryFilter").addEventListener("change", renderBlogs);
 
     try {
         currentUser = JSON.parse(
@@ -421,7 +481,7 @@
                 throw new Error("The server returned an unexpected response.");
             }
 
-            const myBlogs = result.filter(function(blog) {
+            userBlogs = result.filter(function(blog) {
                 if (blog.authorEmail) {
                     return blog.authorEmail.toLowerCase() ===
                         currentUser.email.toLowerCase();
@@ -431,12 +491,11 @@
                     blog.author === currentUser.name;
             });
 
-            document.getElementById("blogCount").textContent =
-                myBlogs.length + (myBlogs.length === 1 ? " blog" : " blogs");
-
             status.textContent = "";
 
-            if (myBlogs.length === 0) {
+            if (userBlogs.length === 0) {
+                document.getElementById("blogFilters").hidden = true;
+                document.getElementById("blogCount").textContent = "0 blogs";
                 showEmptyState(
                     "Your story starts here.",
                     "You haven't published any blogs yet.",
@@ -445,59 +504,45 @@
                 return;
             }
 
-            container.replaceChildren();
-
-            myBlogs.forEach(function(blog) {
-                const card = document.createElement("article");
-                card.className = "blog-card";
-
-                const category = document.createElement("span");
-                category.className = "category";
-                category.textContent = blog.category || "General";
-
-                const heading = document.createElement("h3");
-                heading.textContent = blog.title || "Untitled Blog";
-
-                const paragraph = document.createElement("p");
-                const content = blog.content || "";
-                paragraph.textContent = content.length > 180
-                    ? content.slice(0, 180) + "..."
-                    : content;
-
-                const date = document.createElement("small");
-                const dateValue = blog.date || blog.createdAt || "";
-                date.textContent = dateValue
-                    ? "Published: " + (
-                        isNaN(Date.parse(dateValue))
-                            ? dateValue
-                            : new Date(dateValue).toLocaleDateString()
-                    )
-                    : "Published recently";
-
-                const actions = document.createElement("div");
-                actions.className = "card-actions";
-
-                const blogId = blog._id || blog.id;
-                const readLink = document.createElement("a");
-                readLink.className = "button read-btn";
-                readLink.textContent = "Read full blog";
-                readLink.href = blogId
-                    ? "blog-detail.html?id=" + encodeURIComponent(blogId)
-                    : "#";
-
-                const deleteButton = document.createElement("button");
-                deleteButton.type = "button";
-                deleteButton.className = "button delete-btn";
-                deleteButton.textContent = "🗑 Delete Blog";
-
-                deleteButton.addEventListener("click", function() {
-                    deleteBlog(blog, deleteButton);
-                });
-
-                actions.append(readLink, deleteButton);
-                card.append(category, heading, paragraph, date, actions);
-                container.appendChild(card);
+            const categoryFilter = document.getElementById("categoryFilter");
+            const selectedCategory = categoryFilter.value;
+            const standardCategories = [
+                "General",
+                "Technology",
+                "Education",
+                "Personal Growth",
+                "Lifestyle",
+                "Travel",
+                "Creativity"
+            ];
+            const blogCategories = Array.from(new Set(
+                userBlogs.map(function(blog) {
+                    return blog.category || "General";
+                })
+            ));
+            const additionalCategories = blogCategories
+                .filter(function(category) {
+                    return !standardCategories.includes(category) &&
+                        category !== "Others";
+                })
+                .sort(function(first, second) {
+                return first.localeCompare(second);
             });
+            const categories = [
+                ...standardCategories,
+                ...additionalCategories,
+                "Others"
+            ];
+
+            categoryFilter.replaceChildren(new Option("All categories", ""));
+            categories.forEach(function(category) {
+                categoryFilter.add(new Option(category, category));
+            });
+            categoryFilter.value = categories.includes(selectedCategory)
+                ? selectedCategory
+                : "";
+            document.getElementById("blogFilters").hidden = false;
+            renderBlogs();
 
         } catch (error) {
             console.error("Dashboard loading error:", error);
@@ -510,6 +555,100 @@
                 "Please check that the backend server is running on port 5000, then refresh this page."
             );
         }
+    }
+
+    function renderBlogs() {
+        const container = document.getElementById("blogContainer");
+        const searchTerm = document.getElementById("blogSearch").value
+            .trim()
+            .toLocaleLowerCase();
+        const selectedCategory = document.getElementById("categoryFilter").value;
+        const filteredBlogs = userBlogs.filter(function(blog) {
+            const matchesSearch = [
+                blog.title || "",
+                blog.content || "",
+                blog.category || "General"
+            ].some(function(value) {
+                return value.toLocaleLowerCase().includes(searchTerm);
+            });
+
+            return matchesSearch &&
+                (!selectedCategory ||
+                    (blog.category || "General") === selectedCategory);
+        });
+
+        const blogCount = document.getElementById("blogCount");
+        blogCount.textContent = filteredBlogs.length === userBlogs.length
+            ? userBlogs.length + (userBlogs.length === 1 ? " blog" : " blogs")
+            : filteredBlogs.length + " of " + userBlogs.length + " blogs";
+        container.replaceChildren();
+
+        if (filteredBlogs.length === 0) {
+            showEmptyState(
+                "No matching blogs.",
+                "Try a different search term or category."
+            );
+            return;
+        }
+
+        filteredBlogs.forEach(function(blog) {
+            const card = document.createElement("article");
+            card.className = "blog-card";
+
+            const category = document.createElement("span");
+            category.className = "category";
+            category.textContent = blog.category || "General";
+
+            const heading = document.createElement("h3");
+            heading.textContent = blog.title || "Untitled Blog";
+
+            const paragraph = document.createElement("p");
+            const content = blog.content || "";
+            paragraph.textContent = content.length > 180
+                ? content.slice(0, 180) + "..."
+                : content;
+
+            const date = document.createElement("small");
+            const dateValue = blog.date || blog.createdAt || "";
+            date.textContent = dateValue
+                ? "Published: " + (
+                    isNaN(Date.parse(dateValue))
+                        ? dateValue
+                        : new Date(dateValue).toLocaleDateString()
+                )
+                : "Published recently";
+
+            const actions = document.createElement("div");
+            actions.className = "card-actions";
+
+            const blogId = blog._id || blog.id;
+            const readLink = document.createElement("a");
+            readLink.className = "button read-btn";
+            readLink.textContent = "Read full blog";
+            readLink.href = blogId
+                ? "blog-detail.html?id=" + encodeURIComponent(blogId)
+                : "#";
+
+            const editLink = document.createElement("a");
+            editLink.className = "button edit-btn";
+            editLink.textContent = "✎ Edit Blog";
+            editLink.href = blogId
+                ? "create-blog.html?id=" + encodeURIComponent(blogId)
+                : "#";
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "button delete-btn";
+            deleteButton.textContent = "🗑 Delete Blog";
+
+            deleteButton.addEventListener("click", function() {
+                deleteBlog(blog, deleteButton);
+            });
+
+            actions.append(readLink, editLink, deleteButton);
+            card.append(category, heading, paragraph, date, actions);
+            container.appendChild(card);
+        });
     }
 
     async function deleteBlog(blog, button) {

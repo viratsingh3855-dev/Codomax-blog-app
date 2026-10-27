@@ -260,7 +260,7 @@
 
 <main class="editor-container">
     <span class="eyebrow">✦ YOUR CREATIVE SPACE</span>
-    <h1>Write your <span>story.</span></h1>
+    <h1 id="pageTitle">Write your <span>story.</span></h1>
 
     <p class="description">
         Turn your ideas into a story worth sharing with the world.
@@ -268,7 +268,7 @@
 
     <section class="editor-card">
         <div class="card-heading">
-            <h2>Create a New Blog</h2>
+            <h2 id="editorTitle">Create a New Blog</h2>
             <span class="badge">✍ Blog Editor</span>
         </div>
 
@@ -289,6 +289,7 @@
                 <label for="blogCategory">Category <span class="required">*</span></label>
                 <select id="blogCategory" required>
                     <option value="">Choose a category</option>
+                    <option>General</option>
                     <option>Technology</option>
                     <option>Education</option>
                     <option>Personal Growth</option>
@@ -344,6 +345,8 @@
     const count = document.getElementById("characterCount");
     const message = document.getElementById("blogMessage");
     const publishButton = document.getElementById("publishButton");
+    const blogId = new URLSearchParams(window.location.search).get("id");
+    const editing = Boolean(blogId);
 
     let currentUser = null;
 
@@ -362,6 +365,62 @@
     function showMessage(text, type) {
         message.textContent = text;
         message.className = type;
+    }
+
+    if (editing) {
+        document.title = "Edit Blog | BlogSpace";
+        document.getElementById("pageTitle").innerHTML =
+            'Edit your <span>story.</span>';
+        document.getElementById("editorTitle").textContent = "Edit Blog";
+        publishButton.textContent = "Save Changes";
+        loadBlogForEditing();
+    }
+
+    async function loadBlogForEditing() {
+        publishButton.disabled = true;
+        showMessage("Loading your blog...", "info");
+
+        try {
+            const response = await fetch(
+                API_URL + "/" + encodeURIComponent(blogId)
+            );
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to load blog.");
+            }
+
+            const blogAuthorEmail = (result.authorEmail || "").toLowerCase();
+            const blogBelongsToUser = blogAuthorEmail
+                ? blogAuthorEmail === currentUser.email.toLowerCase()
+                : result.author === currentUser.name;
+
+            if (!blogBelongsToUser) {
+                throw new Error("You can only edit your own blogs.");
+            }
+
+            titleInput.value = result.title || "";
+            const category = result.category || "General";
+            const hasCategory = Array.from(categoryInput.options).some(
+                function(option) {
+                    return option.value === category;
+                }
+            );
+
+            if (!hasCategory) {
+                categoryInput.add(new Option(category, category));
+            }
+
+            categoryInput.value = category;
+            contentInput.value = result.content || "";
+            count.textContent = contentInput.value.length;
+            message.textContent = "";
+            message.className = "";
+            publishButton.disabled = false;
+        } catch (error) {
+            console.error("Load blog for editing error:", error);
+            showMessage(error.message || "Unable to load this blog.", "error");
+        }
     }
 
     contentInput.addEventListener("input", function () {
@@ -396,32 +455,49 @@
         }
 
         publishButton.disabled = true;
-        publishButton.textContent = "Publishing...";
-        showMessage("Saving your blog to the server...", "info");
+        publishButton.textContent = editing ? "Saving..." : "Publishing...";
+        showMessage(
+            editing ? "Saving your changes..." : "Saving your blog to the server...",
+            "info"
+        );
 
         try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    title: title,
-                    category: category,
-                    content: content,
-                    author: currentUser.name || currentUser.email.split("@")[0],
-                    authorEmail: currentUser.email
-                })
-            });
+            const response = await fetch(
+                editing
+                    ? API_URL + "/" + encodeURIComponent(blogId)
+                    : API_URL,
+                {
+                    method: editing ? "PATCH" : "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(editing ? {
+                        title: title,
+                        category: category,
+                        content: content
+                    } : {
+                        title: title,
+                        category: category,
+                        content: content,
+                        author: currentUser.name || currentUser.email.split("@")[0],
+                        authorEmail: currentUser.email
+                    })
+                }
+            );
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || "Unable to publish blog.");
+                throw new Error(
+                    result.message ||
+                    (editing ? "Unable to update blog." : "Unable to publish blog.")
+                );
             }
 
             showMessage(
-                "Blog published successfully! Opening your dashboard...",
+                editing
+                    ? "Blog updated successfully! Opening your dashboard..."
+                    : "Blog published successfully! Opening your dashboard...",
                 "success"
             );
 
@@ -443,7 +519,9 @@
             );
         } finally {
             publishButton.disabled = false;
-            publishButton.textContent = "Publish Blog ↗";
+            publishButton.textContent = editing
+                ? "Save Changes"
+                : "Publish Blog ↗";
         }
     });
 
