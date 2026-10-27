@@ -1,10 +1,18 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | BlogSpace</title>
+    <script>
+        if (window.location.protocol === "file:") {
+            window.location.replace(
+                "http://localhost:5000/login.html" +
+                window.location.search +
+                window.location.hash
+            );
+        }
+    </script>
 
     <style>
         * {
@@ -440,6 +448,10 @@
                 font-size: 26px;
             }
         }
+        :focus-visible {
+            outline: 3px solid #a78bfa;
+            outline-offset: 3px;
+        }
     </style>
 </head>
 
@@ -574,6 +586,7 @@
         const togglePassword = document.getElementById("togglePassword");
         const loginButton = document.getElementById("loginButton");
         const appMessage = document.getElementById("app-message");
+        const API_URL = `${window.location.origin}/api`;
 
         function showMessage(message, type) {
             appMessage.textContent = message;
@@ -608,7 +621,7 @@
             showMessage("Connecting to your account...", "info");
 
             try {
-                const response = await fetch("http://localhost:5000/api/login", {
+                const response = await fetch(API_URL + "/login", {
                     method: "POST",
                     credentials: "include",
                     headers: {

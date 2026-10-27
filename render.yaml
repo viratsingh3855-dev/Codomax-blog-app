@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: blogspace
+    runtime: node
+    plan: free
+    buildCommand: npm ci --prefix backend
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false

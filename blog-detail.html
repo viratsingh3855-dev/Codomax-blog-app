@@ -108,6 +108,10 @@
             text-align: center;
             color: var(--muted);
         }
+        :focus-visible {
+            outline: 3px solid #a78bfa;
+            outline-offset: 3px;
+        }
     </style>
 </head>
 <body>
@@ -123,7 +127,7 @@
     </main>
 
     <script>
-        const API_URL = "http://localhost:5000/api/blogs";
+        const API_URL = `${window.location.origin}/api/blogs`;
         const article = document.getElementById("article");
         const blogId = new URLSearchParams(window.location.search).get("id");
 

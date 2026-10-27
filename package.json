@@ -1,10 +1,12 @@
 {
   "name": "codomax-blog-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "A full-stack blog application with secure authentication and MongoDB storage.",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm start --prefix backend",
+    "dev": "npm run dev --prefix backend",
+    "test": "npm test --prefix backend"
   },
   "keywords": [],
   "author": "",
