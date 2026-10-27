@@ -158,6 +158,12 @@
 
         #userName { color: #c4b5fd; }
 
+        #userEmail {
+            margin-top: -5px;
+            color: #a7a7c4;
+            font-size: 14px;
+        }
+
         .welcome p {
             max-width: 680px;
             color: var(--muted);
@@ -373,6 +379,7 @@
         <span class="eyebrow">YOUR PERSONAL SPACE</span>
 
         <h1>Welcome back, <span id="userName">Writer</span>!</h1>
+        <p id="userEmail"></p>
 
         <p>
             Your ideas deserve to be heard. Continue writing, manage your stories,
@@ -414,28 +421,73 @@
 </footer>
 
 <script>
-    const API_URL = "http://localhost:5000/api/blogs";
+    const API_URL = "http://localhost:5000/api";
 
     let currentUser = null;
     let userBlogs = [];
 
     document.getElementById("blogSearch").addEventListener("input", renderBlogs);
     document.getElementById("categoryFilter").addEventListener("change", renderBlogs);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+    initializeDashboard();
 
-    try {
-        currentUser = JSON.parse(
-            localStorage.getItem("blogspace_currentUser") || "null"
-        );
-    } catch (error) {
-        currentUser = null;
+    async function initializeDashboard() {
+        try {
+            const response = await fetch(API_URL + "/auth/me", {
+                credentials: "include"
+            });
+            const result = await response.json();
+
+            if (response.status === 401) {
+                window.location.replace("login.html");
+                return;
+            }
+
+            if (!response.ok || !result.user) {
+                throw new Error(result.message || "Unable to verify your account.");
+            }
+
+            currentUser = result.user;
+            document.getElementById("userName").textContent =
+                currentUser.name || "Writer";
+            document.getElementById("userEmail").textContent =
+                currentUser.email || "";
+            await loadBlogs();
+        } catch (error) {
+            console.error("Dashboard authentication error:", error);
+            document.getElementById("statusMessage").textContent =
+                error.message || "Unable to verify your account. Please try again.";
+        }
     }
 
-    if (!currentUser || !currentUser.email) {
-        window.location.replace("login.html");
-    } else {
-        document.getElementById("userName").textContent =
-            currentUser.name || "Writer";
-        loadBlogs();
+    async function logout() {
+        const button = document.getElementById("logoutBtn");
+        button.disabled = true;
+
+        try {
+            const response = await fetch(API_URL + "/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.replace("login.html");
+                    return;
+                }
+                throw new Error(result.message || "Unable to log out.");
+            }
+
+            localStorage.removeItem("blogspace_currentUser");
+            localStorage.removeItem("blogspace_user");
+            window.location.replace("login.html");
+        } catch (error) {
+            console.error("Logout error:", error);
+            document.getElementById("statusMessage").textContent =
+                error.message || "Unable to log out. Please try again.";
+            button.disabled = false;
+        }
     }
 
     function showEmptyState(title, description, showButton = false) {
@@ -470,8 +522,15 @@
         container.replaceChildren();
 
         try {
-            const response = await fetch(API_URL);
+            const response = await fetch(API_URL + "/my/blogs", {
+                credentials: "include"
+            });
             const result = await response.json();
+
+            if (response.status === 401) {
+                window.location.replace("login.html");
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(result.message || "Unable to load blogs.");
@@ -481,15 +540,7 @@
                 throw new Error("The server returned an unexpected response.");
             }
 
-            userBlogs = result.filter(function(blog) {
-                if (blog.authorEmail) {
-                    return blog.authorEmail.toLowerCase() ===
-                        currentUser.email.toLowerCase();
-                }
-
-                return Boolean(currentUser.name) &&
-                    blog.author === currentUser.name;
-            });
+            userBlogs = result;
 
             status.textContent = "";
 
@@ -672,15 +723,21 @@
 
         try {
             const response = await fetch(
-                API_URL + "/" + encodeURIComponent(blogId),
+                API_URL + "/blogs/" + encodeURIComponent(blogId),
                 {
-                    method: "DELETE"
+                    method: "DELETE",
+                    credentials: "include"
                 }
             );
 
             const result = await response.json().catch(function() {
                 return {};
             });
+
+            if (response.status === 401) {
+                window.location.replace("login.html");
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(
@@ -703,11 +760,6 @@
         }
     }
 
-    document.getElementById("logoutBtn").addEventListener("click", function() {
-        localStorage.removeItem("blogspace_currentUser");
-        localStorage.removeItem("blogspace_user");
-        window.location.href = "login.html";
-    });
 </script>
 
 </body>

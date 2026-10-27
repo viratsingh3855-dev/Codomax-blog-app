@@ -92,6 +92,7 @@ async function handleRegistration(event) {
     try {
         const response = await fetch(`${API_URL}/register`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, email, password })
         });
@@ -140,6 +141,7 @@ async function handleLogin(event) {
     try {
         const response = await fetch(`${API_URL}/login`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
         });
@@ -151,13 +153,8 @@ async function handleLogin(event) {
             return;
         }
 
-        const user = {
-            name: data.user?.name || email.split("@")[0],
-            email: data.user?.email || email
-        };
-
-        localStorage.setItem("blogspace_currentUser", JSON.stringify(user));
-        localStorage.setItem("blogspace_user", JSON.stringify(user));
+        localStorage.removeItem("blogspace_currentUser");
+        localStorage.removeItem("blogspace_user");
 
         showMessage("Login successful! Opening dashboard...", "success");
         window.location.href = "dashboard.html";
@@ -183,20 +180,26 @@ async function handleCreateBlog(event) {
     const category =
         form.querySelector('[name="category"]')?.value.trim() || "General";
 
-    let user = null;
-
     try {
-        const savedUser = localStorage.getItem("blogspace_currentUser");
-        user = savedUser ? JSON.parse(savedUser) : null;
-    } catch (error) {
-        console.error("Could not read saved user:", error);
-    }
+        const authResponse = await fetch(`${API_URL}/auth/me`, {
+            credentials: "include"
+        });
 
-    if (!user || !user.email) {
-        showMessage("Please log in before creating a blog.", "error");
-        setTimeout(function () {
-            window.location.href = "login.html";
-        }, 1000);
+        if (authResponse.status === 401) {
+            showMessage("Please log in before creating a blog.", "error");
+            setTimeout(function () {
+                window.location.href = "login.html";
+            }, 1000);
+            return;
+        }
+
+        const authData = await authResponse.json();
+        if (!authResponse.ok || !authData.user) {
+            throw new Error(authData.message || "Unable to verify your account.");
+        }
+    } catch (error) {
+        console.error("Create blog authentication error:", error);
+        showMessage(error.message || "Unable to verify your account.", "error");
         return;
     }
 
@@ -211,14 +214,12 @@ async function handleCreateBlog(event) {
     try {
         const response = await fetch(`${API_URL}/blogs`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 title,
                 category,
-                content,
-                author: user.name || user.email.split("@")[0],
-                authorEmail: user.email,
-                date: new Date().toLocaleDateString()
+                content
             })
         });
 
@@ -253,7 +254,9 @@ async function loadBlogs() {
     if (!blogList) return;
 
     try {
-        const response = await fetch(`${API_URL}/blogs`);
+        const response = await fetch(`${API_URL}/blogs`, {
+            credentials: "include"
+        });
 
         if (!response.ok) {
             throw new Error("Could not fetch blogs.");
@@ -326,7 +329,7 @@ async function deleteBlog(blogId, article, button) {
     try {
         const response = await fetch(
             `${API_URL}/blogs/${encodeURIComponent(blogId)}`,
-            { method: "DELETE" }
+            { method: "DELETE", credentials: "include" }
         );
 
         const data = await response.json();

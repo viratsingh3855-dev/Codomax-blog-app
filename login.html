@@ -610,6 +610,7 @@
             try {
                 const response = await fetch("http://localhost:5000/api/login", {
                     method: "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json"
                     },
@@ -630,23 +631,8 @@
                     );
                 }
 
-                const user = data.user || data;
-
-                if (!user.email) {
-                    throw new Error(
-                        "Login response mein user email nahi mila. Please check backend/server.js."
-                    );
-                }
-
-                const currentUser = {
-                    name: user.name || user.fullName || user.username || user.email.split("@")[0],
-                    email: user.email
-                };
-
-                localStorage.setItem(
-                    "blogspace_currentUser",
-                    JSON.stringify(currentUser)
-                );
+                localStorage.removeItem("blogspace_currentUser");
+                localStorage.removeItem("blogspace_user");
 
                 showMessage("Login successful! Opening your dashboard...", "success");
 

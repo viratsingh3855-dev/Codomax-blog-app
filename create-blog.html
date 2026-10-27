@@ -336,7 +336,7 @@
 </footer>
 
 <script>
-    const API_URL = "http://localhost:5000/api/blogs";
+    const API_URL = "http://localhost:5000/api";
 
     const blogForm = document.getElementById("blogForm");
     const titleInput = document.getElementById("blogTitle");
@@ -350,18 +350,6 @@
 
     let currentUser = null;
 
-    try {
-        currentUser = JSON.parse(
-            localStorage.getItem("blogspace_currentUser") || "null"
-        );
-    } catch (error) {
-        currentUser = null;
-    }
-
-    if (!currentUser || !currentUser.email) {
-        window.location.replace("login.html");
-    }
-
     function showMessage(text, type) {
         message.textContent = text;
         message.className = type;
@@ -373,7 +361,37 @@
             'Edit your <span>story.</span>';
         document.getElementById("editorTitle").textContent = "Edit Blog";
         publishButton.textContent = "Save Changes";
-        loadBlogForEditing();
+    }
+
+    initializeEditor();
+
+    async function initializeEditor() {
+        publishButton.disabled = true;
+
+        try {
+            const response = await fetch(API_URL + "/auth/me", {
+                credentials: "include"
+            });
+            const result = await response.json();
+
+            if (response.status === 401) {
+                window.location.replace("login.html");
+                return;
+            }
+
+            if (!response.ok || !result.user) {
+                throw new Error(result.message || "Unable to verify your account.");
+            }
+
+            currentUser = result.user;
+            publishButton.disabled = false;
+            if (editing) {
+                loadBlogForEditing();
+            }
+        } catch (error) {
+            console.error("Editor authentication error:", error);
+            showMessage(error.message || "Unable to verify your account.", "error");
+        }
     }
 
     async function loadBlogForEditing() {
@@ -382,21 +400,18 @@
 
         try {
             const response = await fetch(
-                API_URL + "/" + encodeURIComponent(blogId)
+                API_URL + "/my/blogs/" + encodeURIComponent(blogId),
+                { credentials: "include" }
             );
             const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.message || "Unable to load blog.");
+            if (response.status === 401) {
+                window.location.replace("login.html");
+                return;
             }
 
-            const blogAuthorEmail = (result.authorEmail || "").toLowerCase();
-            const blogBelongsToUser = blogAuthorEmail
-                ? blogAuthorEmail === currentUser.email.toLowerCase()
-                : result.author === currentUser.name;
-
-            if (!blogBelongsToUser) {
-                throw new Error("You can only edit your own blogs.");
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to load blog.");
             }
 
             titleInput.value = result.title || "";
@@ -430,7 +445,7 @@
     blogForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
-        if (!currentUser || !currentUser.email) {
+        if (!currentUser || !currentUser.id) {
             window.location.href = "login.html";
             return;
         }
@@ -464,28 +479,28 @@
         try {
             const response = await fetch(
                 editing
-                    ? API_URL + "/" + encodeURIComponent(blogId)
-                    : API_URL,
+                    ? API_URL + "/blogs/" + encodeURIComponent(blogId)
+                    : API_URL + "/blogs",
                 {
                     method: editing ? "PATCH" : "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(editing ? {
+                    body: JSON.stringify({
                         title: title,
                         category: category,
                         content: content
-                    } : {
-                        title: title,
-                        category: category,
-                        content: content,
-                        author: currentUser.name || currentUser.email.split("@")[0],
-                        authorEmail: currentUser.email
                     })
                 }
             );
 
             const result = await response.json();
+
+            if (response.status === 401) {
+                window.location.replace("login.html");
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(
@@ -525,10 +540,25 @@
         }
     });
 
-    document.getElementById("logoutLink").addEventListener("click", function (event) {
+    document.getElementById("logoutLink").addEventListener("click", async function (event) {
         event.preventDefault();
-        localStorage.removeItem("blogspace_currentUser");
-        window.location.href = "login.html";
+        try {
+            const response = await fetch(API_URL + "/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+            const result = await response.json();
+            if (!response.ok && response.status !== 401) {
+                throw new Error(result.message || "Unable to log out.");
+            }
+
+            localStorage.removeItem("blogspace_currentUser");
+            localStorage.removeItem("blogspace_user");
+            window.location.replace("login.html");
+        } catch (error) {
+            console.error("Logout error:", error);
+            showMessage(error.message || "Unable to log out. Please try again.", "error");
+        }
     });
 </script>
 
