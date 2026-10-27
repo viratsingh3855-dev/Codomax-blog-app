@@ -80,28 +80,6 @@ whether MongoDB is connected or reconnecting.
 Authentication uses an HTTP-only cookie and protected routes require a valid
 session. The API returns JSON errors for failed requests.
 
-## Deploy to Render
-
-The included [`render.yaml`](./render.yaml) configures a single Node web
-service for both the frontend and API. Its build command uses `npm install`
-so deployment can proceed even if the backend lockfile has not yet been
-committed to the source repository.
-
-1. Push this project to a GitHub repository.
-2. In Render, choose **New → Blueprint**, then connect the repository and
-   deploy the blueprint.
-3. When prompted, provide `MONGODB_URI` as a Render secret. Use the Atlas
-   connection string for the database that contains your app's users and
-   posts.
-4. In MongoDB Atlas, allow the Render service's outbound IP addresses in
-   **Network Access**. Prefer fixed outbound IPs where your Render plan
-   supports them; avoid broad IP allowlists when possible.
-5. Wait for `/health` to pass, then open the Render service URL.
-
-Render generates `JWT_SECRET` for the service. Keep database credentials and
-signing secrets in Render's environment settings; do not commit `.env` files
-or paste secrets into source code.
-
 ## Project structure
 
 ```text
@@ -117,6 +95,5 @@ or paste secrets into source code.
 ├── index.html
 ├── login.html
 ├── register.html
-├── render.yaml
 └── style.css
 ```
