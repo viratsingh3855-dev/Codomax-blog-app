@@ -83,7 +83,9 @@ session. The API returns JSON errors for failed requests.
 ## Deploy to Render
 
 The included [`render.yaml`](./render.yaml) configures a single Node web
-service for both the frontend and API.
+service for both the frontend and API. Its build command uses `npm install`
+so deployment can proceed even if the backend lockfile has not yet been
+committed to the source repository.
 
 1. Push this project to a GitHub repository.
 2. In Render, choose **New → Blueprint**, then connect the repository and

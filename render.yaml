@@ -3,7 +3,7 @@ services:
     name: blogspace
     runtime: node
     plan: free
-    buildCommand: npm ci --prefix backend
+    buildCommand: npm install --prefix backend
     startCommand: npm start
     healthCheckPath: /health
     envVars:
